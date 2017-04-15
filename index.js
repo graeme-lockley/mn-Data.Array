@@ -2,12 +2,12 @@ const Maybe = mrequire("core:Data.Maybe:v1.0.0");
 
 
 function ImmutableArray(content) {
-	this.content = content;
+    this.content = content;
 }
 
 
-ImmutableArray.prototype.length = function() {
-	return this.content.length;
+ImmutableArray.prototype.length = function () {
+    return this.content.length;
 };
 
 
@@ -23,10 +23,13 @@ function singleton(content) {
 assumption(singleton(1).length() === 1);
 
 
+const empty = new ImmutableArray([]);
+
+
 //- Try to find an element in a data structure which satisfies a predicate mapping.
 //-
 //- Array a . findMap :: (a -> Maybe b) -> Maybe b
-ImmutableArray.prototype.findMap = function(f) {
+ImmutableArray.prototype.findMap = function (f) {
     const content = this.content;
 
     for (let lp = 0; lp < content.length; lp += 1) {
@@ -43,7 +46,13 @@ assumption(from([1, 2, 3, 4, 5]).findMap(n => n === 3 ? Maybe.Just(n * n) : Mayb
 assumption(from([1, 2, 3, 4, 5]).findMap(n => n === 10 ? Maybe.Just(n * n) : Maybe.Nothing).withDefault(0) === 0);
 
 
+ImmutableArray.prototype.toArray = function () {
+    return [...this.content];
+};
+
+
 module.exports = {
-	from,
+    empty,
+    from,
     singleton
 };
