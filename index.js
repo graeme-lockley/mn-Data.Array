@@ -1,3 +1,4 @@
+const Assert = require("assert");
 const Maybe = mrequire("core:Data.Maybe:v1.0.0");
 
 
@@ -24,6 +25,7 @@ assumption(singleton(1).length() === 1);
 
 
 const empty = new ImmutableArray([]);
+assumptionEqual(empty, from([]));
 
 
 //- Try to find an element in a data structure which satisfies a predicate mapping.
@@ -49,6 +51,13 @@ assumption(from([1, 2, 3, 4, 5]).findMap(n => n === 10 ? Maybe.Just(n * n) : May
 ImmutableArray.prototype.toArray = function () {
     return [...this.content];
 };
+assumptionEqual(from([1, 2, 3, 4]).toArray(), [1, 2, 3, 4]);
+
+
+ImmutableArray.prototype.append = function (item) {
+    return new ImmutableArray([...this.content, item]);
+};
+assumptionEqual(from([1, 2, 3]).append(4), from([1, 2, 3, 4]));
 
 
 module.exports = {
