@@ -1,4 +1,3 @@
-const Assert = require("assert");
 const Maybe = mrequire("core:Data.Maybe:v1.0.0");
 
 
@@ -58,6 +57,37 @@ ImmutableArray.prototype.append = function (item) {
     return new ImmutableArray([...this.content, item]);
 };
 assumptionEqual(from([1, 2, 3]).append(4), from([1, 2, 3, 4]));
+
+
+ImmutableArray.prototype.cons = function (item) {
+    return new ImmutableArray([item, ...this.content]);
+};
+assumptionEqual(from([1, 2, 3]).cons(0), from([0, 1, 2, 3]));
+assumptionEqual(empty.cons(0), from([0]));
+
+
+ImmutableArray.prototype.slice = function(start) {
+    return end => {
+        return new ImmutableArray(this.content.slice(start, end));
+    }
+};
+assumptionEqual(from([1, 2, 3, 4, 5]).slice(1)(3), from([2, 3]));
+assumptionEqual(from([1, 2, 3, 4, 5]).slice(1)(2), from([2]));
+
+
+ImmutableArray.prototype.head = function() {
+    return this.content.length > 0 ? Maybe.Just(this.content[0]) : Maybe.Nothing;
+};
+assumptionEqual(from([1, 2, 3, 4]).head(), Maybe.Just(1));
+assumptionEqual(empty.head(), Maybe.Nothing);
+
+
+ImmutableArray.prototype.tail = function() {
+    return this.content.length > 0 ? Maybe.Just(new ImmutableArray(this.content.slice(1))) : Maybe.Nothing;
+};
+assumptionEqual(from([1, 2, 3, 4]).tail(), Maybe.Just(from([2, 3, 4])));
+assumptionEqual(from([1]).tail(), Maybe.Just(empty));
+assumptionEqual(empty.tail(), Maybe.Nothing);
 
 
 module.exports = {
