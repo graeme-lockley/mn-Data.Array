@@ -90,6 +90,12 @@ assumptionEqual(from([1]).tail(), Maybe.Just(empty));
 assumptionEqual(empty.tail(), Maybe.Nothing);
 
 
+ImmutableArray.prototype.concat = function(array) {
+    return new ImmutableArray(this.content.concat(array.content));
+};
+assumptionEqual(from([1, 2, 3]).concat(from([4, 5, 6])), from([1, 2, 3, 4, 5, 6]));
+
+
 module.exports = {
     empty,
     from,
