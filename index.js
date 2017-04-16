@@ -96,6 +96,13 @@ ImmutableArray.prototype.concat = function(array) {
 assumptionEqual(from([1, 2, 3]).concat(from([4, 5, 6])), from([1, 2, 3, 4, 5, 6]));
 
 
+ImmutableArray.prototype.at = function(index) {
+    return index >= this.content.length ? Maybe.Nothing : Maybe.Just(this.content[index]);
+};
+assumptionEqual(from([1, 2, 3]).at(2), Maybe.Just(3));
+assumptionEqual(from([1, 2, 3]).at(5), Maybe.Nothing);
+
+
 module.exports = {
     empty,
     from,
