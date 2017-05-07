@@ -1,10 +1,11 @@
-const Maybe = mrequire("core:Data.Maybe:v1.0.0");
+const Maybe = mrequire("core:Data.Maybe:1.2.0");
 const Tuple = mrequire("core:Data.Tuple:v1.0.0");
 
 const NativeArray = mrequire("core:Data.Native.Array:1.2.0");
 const NativeMaybe = mrequire("core:Data.Native.Maybe:1.0.0");
 
-const Int = mrequire("core:Data.Int:1.0.2");
+const Int = mrequire("core:Data.Int:1.0.4");
+const String = mrequire("core:Data.String:1.0.4");
 
 const Ordered = mrequire("core:Data.Ordered:1.0.0");
 
@@ -14,25 +15,40 @@ function ArrayState(content) {
 }
 
 
+//- Constructor that create an `Array` from a `Data.Native.Array`.
+//= of :: Data.Native.Array a -> Array a
 const of = content =>
     new ArrayState(content);
 assumptionEqual(of([1, 2, 3, 4]).content, [1, 2, 3, 4]);
 
 
+//- Constructor that create an `Array` containing a single element.
+//= singleton :: a -> Array a
 const singleton = content =>
     of([content]);
 assumptionEqual(singleton(1).content, [1]);
 
 
+//- Constructor that create an empty `Array`.
+//= empty :: Array a
 const empty =
     new ArrayState([]);
 assumptionEqual(empty.content, []);
 
 
+ArrayState.prototype.map = function (f) {
+    return of(NativeArray.map(f)(this.content));
+};
+assumptionEqual(of([1, 2, 3, 4]).map(n => "p" + n), of(["p1", "p2", "p3", "p4"]));
+assumptionEqual(empty.map(n => "p" + n), empty);
+
+
+//- Creates an array of `Int`s for the given range.
+//= range :: Data.Int -> Data.Int -> Array Data.Int
 const range = lower => upper =>
-    of(NativeArray.range(lower)(upper));
-assumptionEqual(range(1)(10), of([1, 2, 3, 4, 5, 6, 7, 8, 9]));
-assumptionEqual(range(10)(1), of([10, 9, 8, 7, 6, 5, 4, 3, 2]));
+    of(NativeArray.map(Int.of)(NativeArray.range(lower.toNative())(upper.toNative())));
+assumptionEqual(range(Int.of(1))(Int.of(10)), of([1, 2, 3, 4, 5, 6, 7, 8, 9]).map(Int.of));
+assumptionEqual(range(Int.of(10))(Int.of(1)), of([10, 9, 8, 7, 6, 5, 4, 3, 2]).map(Int.of));
 
 
 ArrayState.prototype.length = function () {
@@ -47,12 +63,12 @@ const nativeMaybeToMaybe = value =>
 
 
 const maybeToNativeMaybe = value =>
-    value.match([(v => NativeMaybe.Just(v)), () => NativeMaybe.Nothing]);
+    value.reduce(() => NativeMaybe.Nothing)(v => NativeMaybe.Just(v));
 
 
 //- Try to find an element in a data structure which satisfies a predicate mapping.
 //-
-//- Array a . findMap :: (a -> Maybe b) -> Maybe b
+//= Array a => findMap :: (a -> Maybe b) -> Maybe b
 ArrayState.prototype.findMap = function (f) {
     return nativeMaybeToMaybe(
         NativeArray
@@ -130,30 +146,23 @@ ArrayState.prototype.zipWith = function (f) {
 ArrayState.prototype.zip = function (other) {
     return this.zipWith(Tuple)(other);
 };
-assumptionEqual(of(["a", "b", "c"]).zip(range(1)(10)), of([Tuple("a")(1), Tuple("b")(2), Tuple("c")(3)]));
+assumptionEqual(of(["a", "b", "c"]).zip(range(Int.of(1))(Int.of(10))), of([Tuple("a")(Int.of(1)), Tuple("b")(Int.of(2)), Tuple("c")(Int.of(3))]));
 assumptionEqual(of(["a", "b", "c"]).zip(empty), empty);
-assumptionEqual(empty.zip(range(1)(10)), empty);
-
-
-ArrayState.prototype.map = function (f) {
-    return of(NativeArray.map(f)(this.content));
-};
-assumptionEqual(range(1)(5).map(n => "p" + n), of(["p1", "p2", "p3", "p4"]));
-assumptionEqual(empty.map(n => "p" + n), empty);
+assumptionEqual(empty.zip(range(Int.of(1))(Int.of(10))), empty);
 
 
 ArrayState.prototype.join = function (separator) {
-    return NativeArray.join(this.content)(separator);
+    return String.of(NativeArray.join(this.map(x => x.show().toNative()).content)(separator.toNative()));
 };
-assumptionEqual(range(1)(5).join(","), "1,2,3,4");
-assumptionEqual(empty.join(","), "");
+assumptionEqual(empty.join(String.of(",")), String.of(""));
+assumptionEqual(range(Int.of(1))(Int.of(5)).join(String.of(",")), String.of("1,2,3,4"));
 
 
 //= Array a => filter :: (a -> Bool) -> Array a
 ArrayState.prototype.filter = function (predicate) {
     return of(NativeArray.filter(predicate)(this.content));
 };
-assumptionEqual(range(1)(5).filter(n => n % 2 === 0), of([2, 4]));
+assumptionEqual(range(Int.of(1))(Int.of(5)).filter(n => n.toNative() % 2 === 0), of([2, 4]).map(Int.of));
 
 
 //= Array a => sort :: Data.Ordered a => Array a
@@ -169,7 +178,7 @@ ArrayState.prototype.sort = function () {
         }
     })(this.content));
 };
-assumptionEqual(range(10)(0).map(Int.of).sort(), range(1)(11).map(Int.of));
+assumptionEqual(range(Int.of(10))(Int.of(0)).sort(), range(Int.of(1))(Int.of(11)));
 
 
 module.exports = {
