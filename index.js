@@ -122,7 +122,7 @@ assumptionEqual(empty.reduce(() => ({}))(h => t => ({head: h, tail: t})), {});
 assumptionEqual(of([1, 2, 3]).reduce(() => ({}))(h => t => ({head: h, tail: t})), {head: 1, tail: of([2, 3])});
 
 
-ArrayState.prototype.zipWith = function(f) {
+ArrayState.prototype.zipWith = function (f) {
     return other => of(NativeArray.zipWith(f)(this.content)(other.content));
 };
 
@@ -150,14 +150,14 @@ assumptionEqual(empty.join(","), "");
 
 
 //= Array a => filter :: (a -> Bool) -> Array a
-ArrayState.prototype.filter = function(predicate) {
-    return NativeArray.filter(predicate)(this.content);
+ArrayState.prototype.filter = function (predicate) {
+    return of(NativeArray.filter(predicate)(this.content));
 };
-assumptionEqual(range(1)(5).filter(n => n % 2 === 0), [2, 4]);
+assumptionEqual(range(1)(5).filter(n => n % 2 === 0), of([2, 4]));
 
 
 //= Array a => sort :: Data.Ordered a => Array a
-ArrayState.prototype.sort = function() {
+ArrayState.prototype.sort = function () {
     return of(NativeArray.sort(a => b => {
         const result = a.compare(b);
         if (result === Ordered.LT) {
@@ -170,7 +170,6 @@ ArrayState.prototype.sort = function() {
     })(this.content));
 };
 assumptionEqual(range(10)(0).map(Int.of).sort(), range(1)(11).map(Int.of));
-
 
 
 module.exports = {
